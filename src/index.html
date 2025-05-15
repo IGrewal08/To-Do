@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do</title>
+</head>
+<body>
+    <header>
+        <div class="logo">Brand Logo</div>
+        <div class="menu-projects">
+            <div class="menu">
+                <ul>
+                    <li id="home">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 24 24">
+                            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"></path>
+                        </svg>
+                        <div>Home</div>
+                    </li>
+                    <li id="today">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 24 24">
+                            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"></path>
+                        </svg>
+                        <div>Today</div>
+                    </li>
+                    <li id="upcoming">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 24 24">
+                            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"></path>
+                        </svg>
+                        <div>Upcoming</div>
+                    </li>
+                    <li id="inbox">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 24 24">
+                            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"></path>
+                        </svg>
+                        <div>Inbox</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="projects">
+                <ul>
+                    <li>Project</li>    
+                </ul>
+            </div>
+        </div>
+        <button class="create-project"> + New Project</button>
+    </header>
+    <div class="container" id="container">
+        <div class="setting-header" id="setting-header">Todays date</div>
+        <script>
+            function updateDateTime() {
+                const now = new Date();
+                const currentDateTime = now.toLocaleString();
+
+                document.querySelector('#setting-header').textContent = currentDateTime;
+            }
+            setInterval(updateDateTime, 1000);
+        </script>
+        <div class="content" id="content"></div>
+    </div>
+</body>
+</html>
