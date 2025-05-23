@@ -29,34 +29,46 @@
                         </svg>
                         <div>Upcoming</div>
                     </li>
-                    <li id="inbox">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 24 24">
-                            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"></path>
-                        </svg>
-                        <div>Inbox</div>
-                    </li>
                 </ul>
             </div>
             <div class="projects">
+                <h4>Projects:</h4>
                 <ul>
-                    <li>Project</li>    
+                    <li>Project</li>
                 </ul>
             </div>
         </div>
-        <button class="create-project"> + New Project</button>
+        <button class="create-project"> <span style="font-weight: 1000;">+</span> Project</button>
     </header>
     <div class="container" id="container">
         <div class="setting-header" id="setting-header">Todays date</div>
         <script>
             function updateDateTime() {
                 const now = new Date();
-                const currentDateTime = now.toLocaleString();
-
+                const currentDateTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
                 document.querySelector('#setting-header').textContent = currentDateTime;
             }
-            setInterval(updateDateTime, 1000);
+            updateDateTime();
+            setInterval(updateDateTime, 30000);
         </script>
-        <div class="content" id="content"></div>
+        <div class="content" id="content">
+            <div class="home-title">
+                <h1>Home</h1>
+            </div>
+            <div class="cards">
+                <div class="card">
+                    <h2>Total Projects: </h2>
+                    <h2>Total Todos: </h2>
+                </div>
+                <div class="card">
+                    <h2>Todos Completed To Today: </h2>
+                    <h2>Total Todos Completed: </h2>
+                </div>
+                <div class="card">
+                    <h2>Todos Due Today: </h2>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

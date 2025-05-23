@@ -3,38 +3,42 @@ import "/src/styles.css";
 import storage from "./storage";
 import CreateProject from "./projects";
 import { createToDo } from "./todo";
+import { editTodo, deleteTodo, createTodoDOM } from "./todoSetting";
+import { calHome } from "./home";
+import { addProject } from "./createProject.js";
+import { compareDesc } from "date-fns";
 
 const elements = {
-    home: document.querySelector("#home"),
-    today: document.querySelector("#today"),
-    upcoming: document.querySelector("#upcoming"),
-    inbox: document.querySelector("#inbox"),
-
-    projects: document.querySelectorAll(".projects ul"),
-
-    content: document.querySelector(".content")
+    menu: document.querySelectorAll(".menu ul > *"),
+    projects: document.querySelectorAll(".projects ul > *"),
+    content: document.querySelector(".content"),
+    create_project: document.querySelector(".create-project")
 
 }
+
+elements.menu.forEach(element => {
+    element.addEventListener('click', (event) => {
+        switch(event.target.textContent) {
+            case "Home": DOMHome()
+            break;
+            case "Today": DOMToday(currentDate);
+            break;
+            case "Upcoming": ; //WIP
+        }
+    });
+});
 
 elements.projects.forEach(element => {
     element.addEventListener('click', (event) => {
         const currentProjectName = event.target.textContent;
-
         removeNodes();
         const currentProject = searchForProject(currentProjectName);
         DOMProject(currentProject);
-
-        /*
-        0. clear all other dom on content div (
-        1. search through storage array to find this project
-        2. get that object
-        3. create appropriate dom elements
-        4. add event listener at bottom of last to-do item
-        5. add dom creator and update project by pushing this item to list
-        6. (optional to delete a to-do item and rebuild list, add sort feature and rebuild list)
-        7. (add ability to delete this project)
-        */
     });
+});
+
+elements.create_project.addEventListener('click', () => {
+    addProject();
 });
 
 function removeNodes() {
@@ -43,7 +47,7 @@ function removeNodes() {
     }
 }
 
-function searchForProject(currentProjectName) {
+export function searchForProject(currentProjectName) {
     let selectedProject;
     storage.getStorage().forEach(project => {
         if (project.name === `${currentProjectName}`) {
@@ -53,7 +57,99 @@ function searchForProject(currentProjectName) {
     return selectedProject;
 }
 
-function DOMProject(currentProject) {
+function DOMHome() {
+    removeNodes();
+    const text = [{ heading1: "Total Projects: ", heading2: "Total Todos: " },
+        { heading1: "Todos Due Today: ", heading2: "Total Todos Completed: " }]
+
+    const homeTitle = document.createElement("div");
+    homeTitle.classList.add("home-title");
+
+    const homeHeader = document.createElement("h1");
+    homeHeader.textContent = "Home";
+
+    const cards = document.createElement("div");
+    cards.classList.add("cards");
+
+    for (let i = 0; i < text.length; i++) {
+
+        let tempArr = [];
+
+        tempArr = calHome(i, storage);
+
+        const card = document.createElement("div");
+        card.classList.add("card");
+        const heading1 = document.createElement("h2");
+        heading1.textContent = `${text[i].heading1}` + tempArr[0];
+        const heading2 = document.createElement("h2");
+        heading2.textContent = `${text[i].heading2}` + tempArr[1];
+
+        card.appendChild(heading1);
+        card.appendChild(heading2);
+
+        cards.appendChild(card);
+    }
+
+    homeTitle.appendChild(homeHeader);
+    elements.content.appendChild(homeTitle);
+    elements.content.appendChild(cards);
+}
+
+function DOMToday(currentDate) {
+    removeNodes();
+    const todayArr = [];
+    storage.getStorage().forEach(project => {
+        project.todo.forEach(todo => {
+            if (compareDesc(currentDate.toLocaleDateString(), todo.dueDate.toLocaleDateString()) === 0) {
+                todayArr.push(todo);
+            }
+        });
+    });
+
+    const todayTitle = document.createElement("div");
+    todayTitle.classList.add("home-title");
+
+    const todayHeader = document.createElement("h1");
+    todayHeader.textContent = "Deadline's Today";
+
+    const todoItem = document.createElement("div");
+    todoItem.classList.add("todo-items");
+
+    todayArr.forEach(object => {
+        const item = document.createElement("div");
+        item.classList.add("item");
+
+        const data = document.createElement("div");
+        data.classList.add("data");
+
+        const heading = document.createElement("h3");
+        heading.textContent = object.title;
+
+        const description = document.createElement("p");
+        description.textContent = object.description;
+
+        const date = document.createElement("div");
+        date.setAttribute("id", "due-date");
+        let todayDate = object.dueDate;
+        date.textContent = (todayDate.getMonth() + 1) + "-" + todayDate.getDate() + "-" + todayDate.getFullYear();
+
+        item.appendChild(data);
+        data.appendChild(heading);
+        data.appendChild(description);
+        data.appendChild(date);
+
+        todoItem.appendChild(item);
+    });
+
+    todayTitle.appendChild(todayHeader);
+
+    elements.content.appendChild(todayTitle);
+    elements.content.appendChild(todoItem);
+
+}
+
+export function DOMProject(currentProject) {
+    removeNodes();
     const projectTitle = document.createElement("div");
     projectTitle.classList.add("project-title");
 
@@ -63,12 +159,44 @@ function DOMProject(currentProject) {
     const projectSetting = document.createElement("div");
     projectSetting.classList.add("project-title-settings");
 
-    const sortButton = document.createElement("button");
+    const sortButton = document.createElement("select");
     sortButton.textContent = "Sort";
     sortButton.setAttribute("id", "sort");
 
-    sortButton.addEventListener('click', (event) => {
-        //new module
+    const deadline = document.createElement("option");
+    deadline.textContent = "Deadline";
+    deadline.value = "Deadline";
+
+    const priority = document.createElement("option");
+    priority.textContent = "Priority";
+    priority.value = "Priority";
+
+    const alphabetical = document.createElement("option");
+    alphabetical.textContent = "A-Z";
+    alphabetical.value = "A-Z";
+
+    sortButton.appendChild(deadline);
+    sortButton.appendChild(priority);
+    sortButton.appendChild(alphabetical);
+
+    sortButton.addEventListener("change", (event) => {
+        console.log(event);
+        console.log(event.target.value);
+        switch(event.target.value) {
+            case "Deadline": {
+                //WIP
+            }
+            case "Priority": {
+                currentProject.todo.sort((a, b) => parseInt(a.priority) - parseInt(b.priority));
+                const todoItems = document.querySelector(".todo-items");
+                todoItems.remove();
+                DOMToDoItem(currentProject);
+            }
+            case "A-Z": {
+                //WIP
+            }
+        }
+
     });
 
     const settingButton = document.createElement("button");
@@ -76,7 +204,7 @@ function DOMProject(currentProject) {
     settingButton.setAttribute("id", "setting");
 
     settingButton.addEventListener('click', (event) => {
-        //new module
+        //WIP
     });
 
     const deleteButton = document.createElement("button");
@@ -84,7 +212,16 @@ function DOMProject(currentProject) {
     deleteButton.setAttribute("id", "delete");
 
     deleteButton.addEventListener('click', (event) => {
-        // new module
+        alert("Warning! You are permanently deleting this project!");
+        const currentProjectName = currentProject.name;
+        storage.deleteProject(currentProjectName);
+        const currProjects = document.querySelectorAll(".projects ul > *");
+        currProjects.forEach(element => {
+            if (element.textContent === currentProjectName) {
+                element.remove();
+            }
+        });
+        DOMHome();
     });
 
     projectSetting.appendChild(sortButton);
@@ -98,16 +235,15 @@ function DOMProject(currentProject) {
     DOMToDoItem(currentProject);
 }
 
-function DOMToDoItem(currentProject) {
+export function DOMToDoItem(currentProject) {
 
-    const todoObject = currentProject.todo;
+    const todoObjects = currentProject.todo;
 
     const todoItem = document.createElement("div");
     todoItem.classList.add("todo-items");
 
-    todoObject.forEach(object => {
+    todoObjects.forEach(object => {
 
-        console.log(object);
         const item = document.createElement("div");
         item.classList.add("item");
 
@@ -116,7 +252,11 @@ function DOMToDoItem(currentProject) {
         radioInput.setAttribute("name", "todo-item-complete");
 
         radioInput.addEventListener('change', (event) => {
-
+            alert("Todo marked as completed!");
+            event.target.parentNode.parentNode.remove();
+            deleteTodo(object, todoObjects);
+            storage.appendTodos();
+            DOMToDoItem(currentProject);
         });
 
         const data = document.createElement("div");
@@ -130,8 +270,8 @@ function DOMToDoItem(currentProject) {
 
         const date = document.createElement("div");
         date.setAttribute("id", "due-date");
-        const todayDate = object.dueDate;
-        date.textContent = todayDate.getMonth() + 1 + "-" + todayDate.getDay() + "-" + todayDate.getFullYear();
+        let todayDate = object.dueDate;
+        date.textContent = (todayDate.getMonth() + 1) + "-" + todayDate.getDate() + "-" + todayDate.getFullYear();
 
         const options = document.createElement("div");
         options.classList.add("item-options");
@@ -140,8 +280,8 @@ function DOMToDoItem(currentProject) {
         editButton.textContent = "Edit";
         editButton.setAttribute("id", "edit-todo");
 
-        editButton.addEventListener('click', (event) => {
-            //new module
+        editButton.addEventListener('click', () => {
+            editTodo(object, currentDate, todoItem, currentProject);
         });
 
         const deleteButton = document.createElement("button");
@@ -149,8 +289,9 @@ function DOMToDoItem(currentProject) {
         deleteButton.setAttribute("id", "delete-todo");
 
         deleteButton.addEventListener('click', (event) => {
+            alert("Warning! You are permanently deleting this Todo item!");
             event.target.parentNode.parentNode.remove();
-            // remove this todo object from the array as well (in new module)
+            deleteTodo(object, todoObjects);
         });
 
         item.appendChild(radioInput);
@@ -169,46 +310,27 @@ function DOMToDoItem(currentProject) {
     newTodoItem.classList.add("newToDoItem");
 
     const newItem = document.createElement('button');
-    newItem.textContent = "+ New To-Do";
+    newItem.textContent = "+ To-Do";
     newTodoItem.appendChild(newItem);
+    newItem.addEventListener('click', () => {
+        createTodoDOM(currentProject, currentDate, todoItem);
+    });
 
     todoItem.appendChild(newTodoItem);
 
     elements.content.appendChild(todoItem);
 }
 
-const firstProject = new CreateProject('Project');
+const defaultProject = new CreateProject('Project');
 
-const ToDo1 = createToDo("first title", 
-    "first long description of todo that continues forever, and i am waiting for it to end or stop so it won't over flow the todo item window!!!", 
-    new Date(2025, 6, 1),
+const sampleTodo = createToDo("Sample Title", 
+    "description for this todo item", 
+    new Date(),
     1
 );
 
-const ToDo2 = createToDo("second title", 
-    "second long description of todo", 
-    new Date(2025, 6, 1), 
-    6
-);
+defaultProject.addToDo(sampleTodo);
+storage.addProject(defaultProject);
 
-firstProject.addToDo(ToDo1);
-firstProject.addToDo(ToDo2);
-
-storage.addProject(firstProject);
-
-/*
-Home could include progress (completed task - create another array in storage.js to store completed tasks...)
-inbox could include upcoming deadlines
-*/
-/*
-eventlistener for header
-*/
-
-/*
-function to create/generate items in content
-*/
-
-/* Add functions to change and edit todo object on a new module */
-function changeTitle(newTitle, ToDoObject) {
-    ToDoObject.title = newTitle;
-}
+const currentDate = new Date();
+DOMHome();
